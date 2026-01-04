@@ -636,20 +636,41 @@ def worker_leave():
     cursor.execute("SELECT * FROM WORKER WHERE worker_id=%s", (session['user_id'],))
     worker = cursor.fetchone()
     
-    # Get leave balance (placeholder - would come from LEAVE_BALANCE table)
+    # Get worker's leave requests
+    cursor.execute("""
+        SELECT * FROM LEAVE_REQUEST 
+        WHERE worker_id = %s 
+        ORDER BY applied_date DESC
+    """, (session['user_id'],))
+    leave_requests = cursor.fetchall()
+    
+    # Calculate leave balance
+    # For now, use placeholder values
     leave_balance = {
         'casual': 12,
         'sick': 6,
         'annual': 20,
-        'taken_this_year': 8
+        'taken_this_year': 0
     }
+    
+    # Calculate actual taken leaves
+    cursor.execute("""
+        SELECT COUNT(*) as taken 
+        FROM LEAVE_REQUEST 
+        WHERE worker_id = %s 
+        AND status = 'Approved'
+        AND YEAR(start_date) = YEAR(CURDATE())
+    """, (session['user_id'],))
+    taken_data = cursor.fetchone()
+    leave_balance['taken_this_year'] = taken_data['taken'] if taken_data else 0
     
     cursor.close()
     db.close()
     
     return render_template('worker/leave.html', 
                          worker=worker,
-                         leave_balance=leave_balance)
+                         leave_balance=leave_balance,
+                         leave_requests=leave_requests)
 
 # ----- Submit Leave Request -----
 @app.route('/worker/leave/request', methods=['POST'])
@@ -657,22 +678,66 @@ def submit_leave_request():
     if 'user_id' not in session:
         return redirect('/login')
     
+    # Get form data
+    leave_type = request.form.get('leave_type')
     start_date = request.form.get('start_date')
     end_date = request.form.get('end_date')
-    leave_type = request.form.get('leave_type')
     reason = request.form.get('reason', '')
     
-    if not all([start_date, end_date, leave_type]):
+    # Validation
+    if not all([leave_type, start_date, end_date]):
         return redirect('/worker/leave?error=missing_fields')
     
-    # In a complete system, you would:
-    # 1. Validate dates
-    # 2. Check leave balance
-    # 3. Insert into LEAVE_REQUEST table
-    # 4. Send notification to admin
+    # Validate dates
+    try:
+        start = datetime.strptime(start_date, '%Y-%m-%d')
+        end = datetime.strptime(end_date, '%Y-%m-%d')
+        
+        if end < start:
+            return redirect('/worker/leave?error=invalid_dates')
+            
+        if start < datetime.now():
+            return redirect('/worker/leave?error=past_date')
+            
+    except ValueError:
+        return redirect('/worker/leave?error=invalid_date_format')
     
-    # For now, simulate success
-    return redirect('/worker/leave?success=true&type=' + leave_type)
+    # Check leave balance (simplified - you can enhance this)
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    
+    # Check if worker has active leave overlapping with requested dates
+    cursor.execute("""
+        SELECT * FROM LEAVE_REQUEST 
+        WHERE worker_id = %s 
+        AND status = 'Approved'
+        AND ((start_date BETWEEN %s AND %s) OR (end_date BETWEEN %s AND %s))
+    """, (session['user_id'], start_date, end_date, start_date, end_date))
+    
+    if cursor.fetchone():
+        cursor.close()
+        db.close()
+        return redirect('/worker/leave?error=overlapping_leave')
+    
+    # Insert leave request
+    try:
+        sql = """
+        INSERT INTO LEAVE_REQUEST 
+        (worker_id, leave_type, start_date, end_date, reason, status, applied_date)
+        VALUES (%s, %s, %s, %s, %s, 'Pending', CURDATE())
+        """
+        
+        cursor.execute(sql, (session['user_id'], leave_type, start_date, end_date, reason))
+        db.commit()
+        
+        cursor.close()
+        db.close()
+        
+        return redirect('/worker/leave?success=true&type=' + leave_type)
+    except mysql.connector.Error as err:
+        cursor.close()
+        db.close()
+        return redirect(f'/worker/leave?error={str(err)}')
 
 # ----- Worker Salary Page -----
 @app.route('/worker/salary')
@@ -1271,26 +1336,44 @@ def admin_approve_leave():
     cursor.execute("SELECT * FROM WORKER WHERE worker_id=%s", (session['user_id'],))
     admin = cursor.fetchone()
     
-    # Get all leave requests with worker details
+    # Get all pending leave requests with worker details
     cursor.execute("""
         SELECT lr.*, 
                w.name as worker_name, 
                w.department,
                w.worker_id,
+               w.contact,
                a.name as approved_by_name
         FROM LEAVE_REQUEST lr
         JOIN WORKER w ON lr.worker_id = w.worker_id
         LEFT JOIN WORKER a ON lr.approved_by = a.worker_id
+        WHERE lr.status = 'Pending'
         ORDER BY lr.applied_date DESC
     """)
-    leave_requests = cursor.fetchall()
+    pending_requests = cursor.fetchall()
+    
+    # Get recently processed leave requests
+    cursor.execute("""
+        SELECT lr.*, 
+               w.name as worker_name, 
+               w.department,
+               a.name as approved_by_name
+        FROM LEAVE_REQUEST lr
+        JOIN WORKER w ON lr.worker_id = w.worker_id
+        LEFT JOIN WORKER a ON lr.approved_by = a.worker_id
+        WHERE lr.status != 'Pending'
+        ORDER BY lr.approval_date DESC
+        LIMIT 10
+    """)
+    processed_requests = cursor.fetchall()
     
     cursor.close()
     db.close()
     
     return render_template('admin/approve_leave.html',
                          admin=admin,
-                         leave_requests=leave_requests)
+                         pending_requests=pending_requests,
+                         processed_requests=processed_requests)
 
 # ----- Approve Leave Request -----
 @app.route('/admin/leave/<int:leave_id>/approve', methods=['POST'])
