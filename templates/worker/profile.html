@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Smart Labour</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-blue: #3B82F6;
+            --primary-dark-blue: #2563EB;
+            --accent-sky-blue: #38BDF8;
+            --bg-light-gray: #F8FAFC;
+            --card-white: #FFFFFF;
+            --text-dark-slate: #1E293B;
+            --text-medium: #64748B;
+            --text-light: #94A3B8;
+            --border-light: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light-gray);
+            color: var(--text-dark-slate);
+            min-height: 100vh;
+        }
+        
+        .nav-custom {
+            background: var(--card-white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            padding: 1rem 0;
+        }
+        
+        .nav-link-custom {
+            color: var(--text-medium) !important;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link-custom:hover, .nav-link-custom.active {
+            color: var(--primary-blue) !important;
+            background: rgba(59, 130, 246, 0.08);
+        }
+        
+        /* Profile Cards */
+        .profile-card {
+            background: var(--card-white);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .profile-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Profile Avatar */
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-sky-blue) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            margin: 0 auto 1.5rem;
+        }
+        
+        /* Info Items */
+        .info-item {
+            padding: 1rem;
+            border-radius: 12px;
+            background: rgba(59, 130, 246, 0.03);
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--primary-blue);
+        }
+        
+        .info-label {
+            color: var(--text-medium);
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .info-value {
+            color: var(--text-dark-slate);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        /* Form Controls */
+        .form-control-custom {
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-dark-slate);
+            transition: all 0.3s ease;
+        }
+        
+        .form-control-custom:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Action Buttons */
+        .action-btn {
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .save-btn {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark-blue) 100%);
+            color: white;
+        }
+        
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .cancel-btn {
+            background: white;
+            color: var(--text-medium);
+            border: 1px solid var(--border-light);
+        }
+        
+        .cancel-btn:hover {
+            background: var(--bg-light-gray);
+        }
+        
+        /* Stats Cards */
+        .stats-card {
+            background: var(--card-white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Status Indicators */
+        .status-active {
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .status-inactive {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg nav-custom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-bold fs-3 text-primary" href="/worker/dashboard">
+                <i class="bi bi-hammer me-2"></i>SmartLabour
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list fs-3 text-primary"></i>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/worker/dashboard">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom active" href="/worker/profile">
+                            <i class="bi bi-person-circle me-2"></i>Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/worker/tasks">
+                            <i class="bi bi-list-check me-2"></i>Tasks
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/worker/attendance">
+                            <i class="bi bi-calendar-check me-2"></i>Attendance
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link-custom dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical me-2"></i>More
+                        </a>
+                        <ul class="dropdown-menu shadow-lg border-0">
+                            <li><a class="dropdown-item" href="/worker/substitute">
+                                <i class="bi bi-arrow-left-right me-2 text-primary"></i>Substitute
+                            </a></li>
+                            <li><a class="dropdown-item" href="/worker/leave">
+                                <i class="bi bi-calendar-x me-2 text-warning"></i>Leave
+                            </a></li>
+                            <li><a class="dropdown-item" href="/worker/salary">
+                                <i class="bi bi-cash-coin me-2 text-success"></i>Salary
+                            </a></li>
+                            <li><a class="dropdown-item" href="/worker/performance">
+                                <i class="bi bi-graph-up me-2 text-info"></i>Performance
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="/logout">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+            <div>
+                <h1 class="fw-bold mb-2" style="color: var(--text-dark-slate)">My Profile</h1>
+                <p class="text-muted mb-0">Manage your personal information and work details</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/worker/dashboard" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Dashboard
+                </a>
+                <button class="btn btn-primary" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i>Print Profile
+                </button>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Profile Info -->
+            <div class="col-lg-8">
+                <!-- Personal Information -->
+                <div class="profile-card mb-4 fade-in">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0" style="color: var(--text-dark-slate)">
+                            <i class="bi bi-person-vcard me-2 text-primary"></i>
+                            Personal Information
+                        </h4>
+                        <button class="btn btn-sm btn-outline-primary" id="editPersonalBtn">
+                            <i class="bi bi-pencil me-1"></i>Edit
+                        </button>
+                    </div>
+                    
+                    <form action="/worker/profile/update" method="POST" id="personalInfoForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Full Name</label>
+                                    <input type="text" class="form-control-custom form-control" 
+                                           value="{{ worker.name }}" disabled readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Email Address</label>
+                                    <input type="email" class="form-control-custom form-control" 
+                                           value="{{ worker.email }}" disabled readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Contact Number</label>
+                                    <input type="text" class="form-control-custom form-control" name="contact" 
+                                           value="{{ worker.contact if worker.contact else '' }}" 
+                                           placeholder="Enter contact number" 
+                                           id="contactInput" disabled>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Joining Date</label>
+                                    <input type="text" class="form-control-custom form-control" 
+                                           value="{{ worker.joining_date }}" disabled readonly>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Address</label>
+                                    <textarea class="form-control-custom form-control" name="address" 
+                                              rows="3" placeholder="Enter complete address"
+                                              id="addressInput" disabled>{{ worker.address if worker.address else '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 d-none" id="personalFormActions">
+                            <button type="submit" class="save-btn action-btn me-2">
+                                <i class="bi bi-save me-2"></i>Save Changes
+                            </button>
+                            <button type="button" class="cancel-btn action-btn" id="cancelEditBtn">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Work Information -->
+                <div class="profile-card fade-in" style="animation-delay: 0.2s">
+                    <h4 class="mb-4" style="color: var(--text-dark-slate)">
+                        <i class="bi bi-briefcase me-2 text-primary"></i>
+                        Work Information
+                    </h4>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Employee ID</div>
+                                <div class="info-value">WKR-{{ "%04d"|format(worker.worker_id) }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Department</div>
+                                <div class="info-value">{{ worker.department }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Role</div>
+                                <div class="info-value">{{ worker.role|title }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Current Status</div>
+                                <div class="info-value">
+                                    <span class="{% if worker.status == 'Active' %}status-active{% else %}status-inactive{% endif %}">
+                                        {{ worker.status }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Payment Method</div>
+                                <div class="info-value">{{ worker.payment_method }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Account Status</div>
+                                <div class="info-value">
+                                    <span class="status-active">
+                                        <i class="bi bi-check-circle me-1"></i>Active & Verified
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Profile Summary -->
+            <div class="col-lg-4">
+                <!-- Profile Summary -->
+                <div class="profile-card mb-4 fade-in" style="animation-delay: 0.3s">
+                    <div class="text-center">
+                        <div class="profile-avatar">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <h3 class="fw-bold mb-2" style="color: var(--text-dark-slate)">{{ worker.name }}</h3>
+                        <p class="text-muted mb-3">
+                            <i class="bi bi-briefcase me-1"></i>{{ worker.role|title }} • {{ worker.department }}
+                        </p>
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" onclick="window.print()">
+                                <i class="bi bi-printer me-2"></i>Print Profile
+                            </button>
+                            <a href="/worker/dashboard" class="btn btn-outline-secondary">
+                                <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="profile-card mb-4 fade-in" style="animation-delay: 0.4s">
+                    <h5 class="mb-3" style="color: var(--text-dark-slate)">
+                        <i class="bi bi-bar-chart me-2 text-primary"></i>
+                        Profile Stats
+                    </h5>
+                    
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="stats-card">
+                                <div class="stat-value text-primary">{{ worker.joining_date }}</div>
+                                <div class="text-muted small">Joined</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-card">
+                                <div class="stat-value text-success">{{ worker.status }}</div>
+                                <div class="text-muted small">Status</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-card">
+                                <div class="stat-value text-warning">{{ worker.role|title }}</div>
+                                <div class="text-muted small">Role</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-card">
+                                <div class="stat-value text-info">
+    {% set payment = worker.payment_method|replace(' ', '') if worker.payment_method else '' %}
+    {{ payment[:3] }}
+</div>
+                                <div class="text-muted small">Payment</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Password -->
+                <div class="profile-card fade-in" style="animation-delay: 0.5s">
+                    <h5 class="mb-3" style="color: var(--text-dark-slate)">
+                        <i class="bi bi-shield-lock me-2 text-primary"></i>
+                        Change Password
+                    </h5>
+                    
+                    <form action="/worker/profile/change-password" method="POST" id="passwordForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Current Password</label>
+                            <input type="password" class="form-control-custom form-control" 
+                                   name="current_password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">New Password</label>
+                            <input type="password" class="form-control-custom form-control" 
+                                   name="new_password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Confirm Password</label>
+                            <input type="password" class="form-control-custom form-control" 
+                                   name="confirm_password" required>
+                        </div>
+                        <button type="submit" class="save-btn action-btn w-100">
+                            <i class="bi bi-key me-2"></i>Change Password
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Security Note -->
+                <div class="alert alert-info border-0 mt-4" role="alert" style="background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.2);">
+                    <div class="d-flex">
+                        <i class="bi bi-shield-check fs-4 me-3" style="color: var(--accent-sky-blue);"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Profile Security</h6>
+                            <p class="mb-0 small">Your personal information is secured and only visible to authorized personnel.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-4 border-top bg-white mt-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="text-muted small">
+                        © 2025 Smart Labour System • Profile Management
+                    </span>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="text-muted small">
+                        <i class="bi bi-info-circle me-1"></i>Last updated: Today
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Edit Personal Information
+        document.addEventListener('DOMContentLoaded', function() {
+            const editBtn = document.getElementById('editPersonalBtn');
+            const contactInput = document.getElementById('contactInput');
+            const addressInput = document.getElementById('addressInput');
+            const formActions = document.getElementById('personalFormActions');
+            const cancelBtn = document.getElementById('cancelEditBtn');
+            
+            editBtn.addEventListener('click', function() {
+                contactInput.disabled = false;
+                addressInput.disabled = false;
+                formActions.classList.remove('d-none');
+                editBtn.disabled = true;
+            });
+            
+            cancelBtn.addEventListener('click', function() {
+                contactInput.disabled = true;
+                addressInput.disabled = true;
+                formActions.classList.add('d-none');
+                editBtn.disabled = false;
+                // Reset form values
+                document.getElementById('personalInfoForm').reset();
+            });
+            
+            // Form submission
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        const originalText = submitBtn.innerHTML;
+                        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Saving...';
+                        submitBtn.disabled = true;
+                        
+                        // Re-enable after 3 seconds if still on page
+                        setTimeout(() => {
+                            submitBtn.innerHTML = originalText;
+                            submitBtn.disabled = false;
+                        }, 3000);
+                    }
+                });
+            });
+            
+            // Password strength indicator
+            const newPasswordInput = document.querySelector('input[name="new_password"]');
+            if (newPasswordInput) {
+                newPasswordInput.addEventListener('input', function() {
+                    const password = this.value;
+                    let strength = 0;
+                    
+                    if (password.length >= 8) strength++;
+                    if (/[A-Z]/.test(password)) strength++;
+                    if (/[0-9]/.test(password)) strength++;
+                    if (/[^A-Za-z0-9]/.test(password)) strength++;
+                    
+                    // You could add visual feedback here
+                });
+            }
+        });
+    </script>
+</body>
+</html>

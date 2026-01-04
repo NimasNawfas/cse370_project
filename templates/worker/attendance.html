@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - Smart Labour</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-blue: #3B82F6;
+            --primary-dark-blue: #2563EB;
+            --accent-sky-blue: #38BDF8;
+            --bg-light-gray: #F8FAFC;
+            --card-white: #FFFFFF;
+            --text-dark-slate: #1E293B;
+            --text-medium: #64748B;
+            --text-light: #94A3B8;
+            --border-light: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light-gray);
+            color: var(--text-dark-slate);
+            min-height: 100vh;
+        }
+        
+        .nav-custom {
+            background: var(--card-white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            padding: 1rem 0;
+        }
+        
+        .nav-link-custom {
+            color: var(--text-medium) !important;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link-custom:hover, .nav-link-custom.active {
+            color: var(--primary-blue) !important;
+            background: rgba(59, 130, 246, 0.08);
+        }
+        
+        /* Attendance Cards */
+        .attendance-card {
+            background: var(--card-white);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .attendance-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .today-attendance {
+            border-top: 4px solid var(--primary-blue);
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .status-present { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .status-halfday { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .status-absent { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        
+        /* Action Buttons */
+        .action-btn {
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .checkin-btn {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark-blue) 100%);
+            color: white;
+        }
+        
+        .checkout-btn {
+            background: white;
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+        }
+        
+        .checkin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .checkout-btn:hover {
+            background: var(--primary-blue);
+            color: white;
+        }
+        
+        /* Attendance Table */
+        .attendance-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .attendance-table th {
+            background: rgba(59, 130, 246, 0.05);
+            color: var(--text-dark-slate);
+            font-weight: 600;
+            padding: 1rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+        
+        .attendance-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-medium);
+        }
+        
+        .attendance-table tr:hover {
+            background: rgba(59, 130, 246, 0.02);
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            background: var(--card-white);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+        }
+        
+        /* Month Selector */
+        .month-selector {
+            background: var(--card-white);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--text-dark-slate);
+            font-weight: 500;
+        }
+        
+        /* Stats Cards */
+        .stats-card {
+            background: var(--card-white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg nav-custom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-bold fs-3 text-primary" href="/worker/dashboard">
+                <i class="bi bi-hammer me-2"></i>SmartLabour
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list fs-3 text-primary"></i>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/worker/dashboard">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/worker/profile">
+                            <i class="bi bi-person-circle me-2"></i>Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/worker/tasks">
+                            <i class="bi bi-list-check me-2"></i>Tasks
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom active" href="/worker/attendance">
+                            <i class="bi bi-calendar-check me-2"></i>Attendance
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link-custom dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical me-2"></i>More
+                        </a>
+                        <ul class="dropdown-menu shadow-lg border-0">
+                            <li><a class="dropdown-item" href="/worker/substitute">
+                                <i class="bi bi-arrow-left-right me-2 text-primary"></i>Substitute
+                            </a></li>
+                            <li><a class="dropdown-item" href="/worker/leave">
+                                <i class="bi bi-calendar-x me-2 text-warning"></i>Leave
+                            </a></li>
+                            <li><a class="dropdown-item" href="/worker/salary">
+                                <i class="bi bi-cash-coin me-2 text-success"></i>Salary
+                            </a></li>
+                            <li><a class="dropdown-item" href="/worker/performance">
+                                <i class="bi bi-graph-up me-2 text-info"></i>Performance
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="/logout">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+            <div>
+                <h1 class="fw-bold mb-2" style="color: var(--text-dark-slate)">Attendance Tracking</h1>
+                <p class="text-muted mb-0">Monitor your daily attendance and working hours</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/worker/dashboard" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Dashboard
+                </a>
+                <button class="btn btn-primary" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i>Print Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Today's Attendance -->
+        <div class="attendance-card today-attendance mb-4 fade-in">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3 class="mb-3" style="color: var(--text-dark-slate)">Today's Attendance - {{ today }}</h3>
+                    
+                    {% if today_attendance %}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <div class="stat-value text-primary">
+                                    {{ today_attendance.attendance_value * 100 }}%
+                                </div>
+                                <div class="text-muted">Attendance Status</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <div class="stat-value text-success">
+                                    {{ today_attendance.check_in|default('Not checked in') }}
+                                </div>
+                                <div class="text-muted">Check-in Time</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <div class="stat-value text-warning">
+                                    {{ today_attendance.check_out|default('Not checked out') }}
+                                </div>
+                                <div class="text-muted">Check-out Time</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <span class="status-badge {% if today_attendance.attendance_value == 1 %}status-present{% else %}status-halfday{% endif %}">
+                            {% if today_attendance.attendance_value == 1 %}
+                                <i class="bi bi-check-circle me-1"></i> Full Day Present
+                            {% else %}
+                                <i class="bi bi-clock me-1"></i> Half Day (Checked in)
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    {% if today_attendance.working_hours %}
+                    <div class="alert alert-info border-0 bg-info bg-opacity-10">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-clock-history fs-4 me-3 text-info"></i>
+                            <div>
+                                <h6 class="mb-1">Working Hours</h6>
+                                <p class="mb-0">Total hours worked today: <strong>{{ today_attendance.working_hours }} hours</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if not today_attendance.check_out %}
+                    <div class="mt-4">
+                        <p class="text-muted mb-3">Ready to end your shift?</p>
+                        <form action="/worker/attendance/checkout" method="POST" class="d-inline">
+                            <button type="submit" class="checkout-btn action-btn">
+                                <i class="bi bi-door-closed me-2"></i>Check Out
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success border-0 bg-success bg-opacity-10">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        Your shift is completed for today. Great work!
+                    </div>
+                    {% endif %}
+                    
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="rounded-circle bg-warning bg-opacity-10 d-inline-flex p-4 mb-3">
+                            <i class="bi bi-clock-history fs-1 text-warning"></i>
+                        </div>
+                        <h4 class="mb-3" style="color: var(--text-dark-slate)">Not Checked In Yet</h4>
+                        <p class="text-muted mb-4">Start your workday by checking in below</p>
+                        <form action="/worker/attendance/checkin" method="POST">
+                            <button type="submit" class="checkin-btn action-btn">
+                                <i class="bi bi-door-open me-2"></i>Check In Now
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex p-4 mb-3">
+                            <i class="bi bi-calendar-check fs-1 text-primary"></i>
+                        </div>
+                        <h5 class="mb-3" style="color: var(--text-dark-slate)">Attendance Stats</h5>
+                        <div class="text-start">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Current Month:</span>
+                                <span class="fw-semibold">{% if monthly_summary %}{{ monthly_summary[0].attendance_days }}/{{ monthly_summary[0].total_days }} days{% else %}0/0 days{% endif %}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Average Hours:</span>
+                               <span class="fw-semibold">{{ (monthly_summary[0].avg_hours or 0)|round(2) if monthly_summary else 0 }} hrs</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Attendance Rate:</span>
+                                <span class="fw-semibold text-success">
+                                    {% if monthly_summary and monthly_summary[0].total_days > 0 %}
+                                        {{ (monthly_summary[0].attendance_days / monthly_summary[0].total_days * 100)|round }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Statistics -->
+        <div class="row mb-4 fade-in" style="animation-delay: 0.2s">
+            <div class="col-12">
+                <div class="chart-container">
+                    <h4 class="mb-3" style="color: var(--text-dark-slate)">Monthly Attendance Overview</h4>
+                    <div style="height: 300px;">
+                        <canvas id="attendanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance History -->
+        <div class="row fade-in" style="animation-delay: 0.3s">
+            <div class="col-12">
+                <div class="attendance-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0" style="color: var(--text-dark-slate)">Recent Attendance History</h4>
+                        <select class="month-selector">
+                            <option>Last 30 Days</option>
+                            <option>Current Month</option>
+                            <option>Previous Month</option>
+                            <option>Last 3 Months</option>
+                        </select>
+                    </div>
+                    
+                    {% if attendance_history %}
+                    <div class="table-responsive">
+                        <table class="attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Day</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Status</th>
+                                    <th>Working Hours</th>
+                                    <th>Attendance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in attendance_history %}
+                                <tr>
+                                    <td>{{ record.date }}</td>
+                                    <td>{{ record.date.strftime('%A') if record.date else '' }}</td>
+                                    <td>{{ record.check_in|default('-') }}</td>
+                                    <td>{{ record.check_out|default('-') }}</td>
+                                    <td>
+                                        {% if record.check_out %}
+                                            <span class="status-badge status-present">Completed</span>
+                                        {% elif record.check_in %}
+                                            <span class="status-badge status-halfday">In Progress</span>
+                                        {% else %}
+                                            <span class="status-badge status-absent">Absent</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ (record.working_hours or 0)|round(2) }} hrs</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                                <div class="progress-bar bg-success" 
+                                                     style="width: {{ record.attendance_value * 100 }}%"></div>
+                                            </div>
+                                            <span>{{ (record.attendance_value * 100)|int }}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="rounded-circle bg-light d-inline-flex p-4 mb-3">
+                            <i class="bi bi-calendar-x fs-1 text-muted"></i>
+                        </div>
+                        <h5 class="text-muted">No Attendance Records Found</h5>
+                        <p class="text-muted">Your attendance records will appear here once you start checking in.</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Summary -->
+                    <div class="row mt-4">
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <div class="stat-value text-primary">{{ attendance_history|length }}</div>
+                                <div class="text-muted">Total Records</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <div class="stat-value text-success">
+                                    {{ attendance_history|selectattr('check_out')|list|length }}
+                                </div>
+                                <div class="text-muted">Completed Shifts</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                {% set total_hours = attendance_history|selectattr('working_hours')|map(attribute='working_hours')|sum %}
+                                <div class="stat-value text-warning">{{ total_hours|default(0)|round(2) }}</div>
+                                <div class="text-muted">Total Hours</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                {% if attendance_history|length > 0 %}
+                                    {% set avg_hours = total_hours / attendance_history|length %}
+                                    <div class="stat-value text-info">{{ avg_hours|round(2) }}</div>
+                                {% else %}
+                                    <div class="stat-value text-info">0.00</div>
+                                {% endif %}
+                                <div class="text-muted">Avg Hours/Day</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-4 border-top bg-white mt-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="text-muted small">
+                        © 2025 Smart Labour System • Attendance Tracking
+                    </span>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="text-muted small">
+                        <i class="bi bi-calendar-check me-1"></i>Last updated: Today
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize Chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+            
+            // Sample data - in real app, this would come from backend
+            const attendanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Attendance Days',
+                        data: [22, 24, 20, 23, 25, 21],
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Working Hours',
+                        data: [176, 192, 160, 184, 200, 168],
+                        backgroundColor: 'rgba(56, 189, 248, 0.5)',
+                        borderColor: 'rgb(56, 189, 248)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+            
+            // Add animation to table rows
+            const tableRows = document.querySelectorAll('.attendance-table tbody tr');
+            tableRows.forEach((row, index) => {
+                row.style.animationDelay = `${index * 0.05}s`;
+                row.classList.add('fade-in');
+            });
+        });
+    </script>
+</body>
+</html>

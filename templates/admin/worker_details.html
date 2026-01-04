@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Details - Smart Labour Admin</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-blue: #3B82F6;
+            --primary-dark-blue: #2563EB;
+            --accent-sky-blue: #38BDF8;
+            --bg-light-gray: #F8FAFC;
+            --card-white: #FFFFFF;
+            --text-dark-slate: #1E293B;
+            --text-medium: #64748B;
+            --text-light: #94A3B8;
+            --border-light: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light-gray);
+            color: var(--text-dark-slate);
+            min-height: 100vh;
+        }
+        
+        .nav-custom {
+            background: var(--card-white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            padding: 1rem 0;
+        }
+        
+        .nav-link-custom {
+            color: var(--text-medium) !important;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link-custom:hover, .nav-link-custom.active {
+            color: var(--primary-blue) !important;
+            background: rgba(59, 130, 246, 0.08);
+        }
+        
+        /* Detail Cards */
+        .detail-card {
+            background: var(--card-white);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Worker Header */
+        .worker-header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark-blue) 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Info Items */
+        .info-item {
+            padding: 1rem;
+            border-radius: 12px;
+            background: rgba(59, 130, 246, 0.03);
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--primary-blue);
+        }
+        
+        .info-label {
+            color: var(--text-medium);
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .info-value {
+            color: var(--text-dark-slate);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .status-active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .status-onleave { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .status-inactive { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        
+        /* Tabs */
+        .detail-tabs {
+            background: var(--card-white);
+            border-radius: 12px;
+            padding: 0.5rem;
+            border: 1px solid var(--border-light);
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-medium);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .detail-tab:hover, .detail-tab.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg nav-custom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-bold fs-3 text-primary" href="/admin/dashboard">
+                <i class="bi bi-hammer me-2"></i>SmartLabour
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list fs-3 text-primary"></i>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/admin/dashboard">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/admin/all_workers">
+                            <i class="bi bi-people me-2"></i>All Workers
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/admin/attendance_reports">
+                            <i class="bi bi-calendar-check me-2"></i>Attendance
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/admin/salary_management">
+                            <i class="bi bi-cash-coin me-2"></i>Salary
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link-custom dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-gear me-2"></i>Approvals
+                        </a>
+                        <ul class="dropdown-menu shadow-lg border-0">
+                            <li><a class="dropdown-item" href="/admin/approve_substitutes">
+                                <i class="bi bi-arrow-left-right me-2 text-primary"></i>Substitutes
+                            </a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom text-danger" href="/logout">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Back Button -->
+        <div class="mb-4 fade-in">
+            <a href="/admin/all_workers" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>Back to All Workers
+            </a>
+        </div>
+
+        <!-- Worker Header -->
+        <div class="worker-header fade-in">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="fw-bold mb-2">{{ worker.name }}</h1>
+                    <p class="mb-0 opacity-75">
+                        <i class="bi bi-briefcase me-2"></i>{{ worker.department }} • 
+                        <i class="bi bi-person-badge ms-3 me-2"></i>{{ worker.role|title }} • 
+                        <i class="bi bi-calendar ms-3 me-2"></i>Joined: {{ worker.joining_date }}
+                    </p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="rounded-circle bg-white bg-opacity-20 d-inline-flex p-4 mb-3">
+                        <i class="bi bi-person fs-1"></i>
+                    </div>
+                    <div>
+                        <span class="status-badge status-{{ worker.status|lower|replace(' ', '') }}">
+                            {{ worker.status }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="detail-tabs fade-in" style="animation-delay: 0.1s">
+            <div class="d-flex flex-wrap gap-2">
+                <button class="detail-tab active" data-tab="overview">Overview</button>
+                <button class="detail-tab" data-tab="attendance">Attendance</button>
+                <button class="detail-tab" data-tab="tasks">Tasks</button>
+                <button class="detail-tab" data-tab="salary">Salary</button>
+                <button class="detail-tab" data-tab="performance">Performance</button>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tabContent">
+            <!-- Overview Tab -->
+            <div class="tab-pane active" id="overviewTab">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-card">
+                            <h4 class="mb-3" style="color: var(--text-dark-slate)">
+                                <i class="bi bi-person-vcard me-2 text-primary"></i>
+                                Personal Information
+                            </h4>
+                            
+                            <div class="info-item">
+                                <div class="info-label">Employee ID</div>
+                                <div class="info-value">WKR-{{ "%04d"|format(worker.worker_id) }}</div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-label">Email Address</div>
+                                <div class="info-value">{{ worker.email }}</div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-label">Contact Number</div>
+                                <div class="info-value">{{ worker.contact or 'Not provided' }}</div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-label">Address</div>
+                                <div class="info-value">{{ worker.address or 'Not provided' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="detail-card">
+                            <h4 class="mb-3" style="color: var(--text-dark-slate)">
+                                <i class="bi bi-briefcase me-2 text-primary"></i>
+                                Work Information
+                            </h4>
+                            
+                            <div class="info-item">
+                                <div class="info-label">Department</div>
+                                <div class="info-value">{{ worker.department }}</div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-label">Role</div>
+                                <div class="info-value">{{ worker.role|title }}</div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-label">Joining Date</div>
+                                <div class="info-value">{{ worker.joining_date }}</div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-label">Payment Method</div>
+                                <div class="info-value">{{ worker.payment_method }}</div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-label">Current Status</div>
+                                <div class="info-value">
+                                    <span class="status-badge status-{{ worker.status|lower|replace(' ', '') }}">
+                                        {{ worker.status }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="detail-card">
+                    <h4 class="mb-3" style="color: var(--text-dark-slate)">
+                        <i class="bi bi-bar-chart me-2 text-primary"></i>
+                        Quick Statistics
+                    </h4>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <div class="fs-2 fw-bold text-primary">{{ attendance|length }}</div>
+                                <div class="text-muted">Attendance Records</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <div class="fs-2 fw-bold text-success">{{ tasks|length }}</div>
+                                <div class="text-muted">Total Tasks</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <div class="fs-2 fw-bold text-warning">{{ salaries|length }}</div>
+                                <div class="text-muted">Salary Records</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                {% set completed_tasks = tasks|selectattr('status', 'equalto', 'Completed')|list|length %}
+                                <div class="fs-2 fw-bold text-info">{{ completed_tasks }}</div>
+                                <div class="text-muted">Completed Tasks</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Attendance Tab (Hidden by default) -->
+            <div class="tab-pane" id="attendanceTab" style="display: none;">
+                <div class="detail-card">
+                    <h4 class="mb-3" style="color: var(--text-dark-slate)">
+                        <i class="bi bi-calendar-check me-2 text-primary"></i>
+                        Attendance History
+                    </h4>
+                    
+                    {% if attendance %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Status</th>
+                                    <th>Working Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in attendance %}
+                                <tr>
+                                    <td>{{ record.date }}</td>
+                                    <td>{{ record.check_in or '-' }}</td>
+                                    <td>{{ record.check_out or '-' }}</td>
+                                    <td>
+                                        {% if record.attendance_value == 1 %}
+                                        <span class="badge bg-success">Full Day</span>
+                                        {% elif record.attendance_value == 0.5 %}
+                                        <span class="badge bg-warning">Half Day</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Absent</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ record.working_hours or 0|round(2) }} hrs</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No attendance records found.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Tasks Tab (Hidden by default) -->
+            <div class="tab-pane" id="tasksTab" style="display: none;">
+                <div class="detail-card">
+                    <h4 class="mb-3" style="color: var(--text-dark-slate)">
+                        <i class="bi bi-list-check me-2 text-primary"></i>
+                        Assigned Tasks
+                    </h4>
+                    
+                    {% if tasks %}
+                        {% for task in tasks %}
+                        <div class="p-3 border rounded mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ task.task_details }}</h6>
+                                    <small class="text-muted">
+                                        Assigned: {{ task.assigned_date }} • Deadline: {{ task.deadline }}
+                                    </small>
+                                </div>
+                                <span class="badge {% if task.status == 'Completed' %}bg-success{% elif task.status == 'In Progress' %}bg-primary{% elif task.status == 'Delayed' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                    {{ task.status }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No tasks assigned.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Salary Tab (Hidden by default) -->
+            <div class="tab-pane" id="salaryTab" style="display: none;">
+                <div class="detail-card">
+                    <h4 class="mb-3" style="color: var(--text-dark-slate)">
+                        <i class="bi bi-cash-coin me-2 text-primary"></i>
+                        Salary History
+                    </h4>
+                    
+                    {% if salaries %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Base Salary</th>
+                                    <th>Extra Hours</th>
+                                    <th>Bonus</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for salary in salaries %}
+                                <tr>
+                                    <td>{{ salary.month }}</td>
+                                    <td>₹{{ "%.2f"|format(salary.base_salary or 0) }}</td>
+                                    <td>{{ salary.extra_hours or 0 }} hrs</td>
+                                    <td>₹{{ "%.2f"|format(salary.bonus_amount or 0) }}</td>
+                                    <td class="fw-bold text-success">₹{{ "%.2f"|format(salary.total_salary or 0) }}</td>
+                                    <td>
+                                        <span class="badge {% if salary.status == 'Paid' %}bg-success{% elif salary.status == 'Finalized' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                            {{ salary.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No salary records found.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Performance Tab (Hidden by default) -->
+            <div class="tab-pane" id="performanceTab" style="display: none;">
+                <div class="detail-card">
+                    <h4 class="mb-3" style="color: var(--text-dark-slate)">
+                        <i class="bi bi-graph-up me-2 text-primary"></i>
+                        Performance Records
+                    </h4>
+                    
+                    {% if performances %}
+                        {% for perf in performances %}
+                        <div class="p-3 border rounded mb-3">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="fs-4 fw-bold text-primary">{{ perf.month }}</div>
+                                        <small class="text-muted">Month</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="fs-4 fw-bold text-success">{{ perf.attendance_percentage or 0|int }}%</div>
+                                        <small class="text-muted">Attendance</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="fs-4 fw-bold text-warning">{{ perf.total_hours or 0|round(2) }} hrs</div>
+                                        <small class="text-muted">Total Hours</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    {% if perf.manager_feedback %}
+                                    <div class="text-center">
+                                        <span class="badge bg-info">Feedback Given</span>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center">
+                                        <span class="badge bg-secondary">No Feedback</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No performance records found.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-4 border-top bg-white mt-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="text-muted small">
+                        © 2025 Smart Labour System • Worker Details
+                    </span>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="text-muted small">
+                        Worker ID: WKR-{{ "%04d"|format(worker.worker_id) }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.detail-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                const tabId = this.getAttribute('data-tab');
+                
+                // Hide all tab panes
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.style.display = 'none';
+                    pane.classList.remove('active');
+                });
+                
+                // Show selected tab pane
+                const selectedPane = document.getElementById(`${tabId}Tab`);
+                if (selectedPane) {
+                    selectedPane.style.display = 'block';
+                    selectedPane.classList.add('active');
+                }
+            });
+        });
+        
+        // Update worker status
+        function updateWorkerStatus(newStatus) {
+            if (confirm(`Change worker status to "${newStatus}"?`)) {
+                fetch(`/admin/worker/{{ worker.worker_id }}/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `status=${newStatus}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Smart Labour</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-blue: #3B82F6;
+            --primary-dark-blue: #2563EB;
+            --accent-sky-blue: #38BDF8;
+            --bg-light-gray: #F8FAFC;
+            --card-white: #FFFFFF;
+            --text-dark-slate: #1E293B;
+            --text-medium: #64748B;
+            --text-light: #94A3B8;
+            --border-light: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light-gray);
+            color: var(--text-dark-slate);
+            min-height: 100vh;
+        }
+        
+        .nav-custom {
+            background: var(--card-white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            padding: 1rem 0;
+        }
+        
+        .nav-link-custom {
+            color: var(--text-medium) !important;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link-custom:hover, .nav-link-custom.active {
+            color: var(--primary-blue) !important;
+            background: rgba(59, 130, 246, 0.08);
+        }
+        
+        /* Admin Cards */
+        .admin-card {
+            background: var(--card-white);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .admin-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Stats Cards */
+        .stats-card {
+            background: var(--card-white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Quick Actions */
+        .quick-action {
+            background: var(--card-white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-action:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-blue);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Recent Activity */
+        .activity-item {
+            padding: 1rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-blue);
+            background: rgba(59, 130, 246, 0.03);
+            margin-bottom: 0.75rem;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg nav-custom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-bold fs-3 text-primary" href="/admin/dashboard">
+                <i class="bi bi-hammer me-2"></i>SmartLabour
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list fs-3 text-primary"></i>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link-custom active" href="/admin/dashboard">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/admin/all_workers">
+                            <i class="bi bi-people me-2"></i>All Workers
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/admin/attendance_reports">
+                            <i class="bi bi-calendar-check me-2"></i>Attendance
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/admin/salary_management">
+                            <i class="bi bi-cash-coin me-2"></i>Salary
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link-custom dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-gear me-2"></i>Approvals
+                        </a>
+                        <ul class="dropdown-menu shadow-lg border-0">
+                            <li><a class="dropdown-item" href="/admin/approve_substitutes">
+                                <i class="bi bi-arrow-left-right me-2 text-primary"></i>Substitutes
+                            </a></li>
+                            <li><a class="dropdown-item" href="/admin/approve_leave">
+                                <i class="bi bi-calendar-x me-2 text-warning"></i>Leave
+                            </a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom text-danger" href="/logout">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+            <div>
+                <h1 class="fw-bold mb-2" style="color: var(--text-dark-slate)">Admin Dashboard</h1>
+                <p class="text-muted mb-0">Welcome back, {{ admin.name }}! Manage your workforce efficiently.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <span class="badge bg-primary fs-6">
+                    <i class="bi bi-shield-check me-2"></i>Admin Access
+                </span>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="row mb-4 fade-in" style="animation-delay: 0.1s">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stat-value text-primary">{{ total_workers }}</div>
+                    <div class="text-muted">Total Workers</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stat-value text-success">{{ total_managers }}</div>
+                    <div class="text-muted">Managers</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stat-value text-warning">{{ today_attendance }}</div>
+                    <div class="text-muted">Today's Attendance</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stat-value text-danger">{{ pending_substitutes }}</div>
+                    <div class="text-muted">Pending Approvals</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-4 fade-in" style="animation-delay: 0.2s">
+            <div class="col-12">
+                <h4 class="mb-3" style="color: var(--text-dark-slate)">Quick Actions</h4>
+                <div class="row g-3">
+                    <div class="col-md-2 col-6">
+                        <a href="/admin/all_workers" class="quick-action text-decoration-none">
+                            <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex p-3 mb-3">
+                                <i class="bi bi-people fs-4 text-primary"></i>
+                            </div>
+                            <h6>All Workers</h6>
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <a href="/admin/salary_management" class="quick-action text-decoration-none">
+                            <div class="rounded-circle bg-success bg-opacity-10 d-inline-flex p-3 mb-3">
+                                <i class="bi bi-cash-coin fs-4 text-success"></i>
+                            </div>
+                            <h6>Salary</h6>
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <a href="/admin/attendance_reports" class="quick-action text-decoration-none">
+                            <div class="rounded-circle bg-warning bg-opacity-10 d-inline-flex p-3 mb-3">
+                                <i class="bi bi-calendar-check fs-4 text-warning"></i>
+                            </div>
+                            <h6>Attendance</h6>
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <a href="/admin/approve_substitutes" class="quick-action text-decoration-none">
+                            <div class="rounded-circle bg-info bg-opacity-10 d-inline-flex p-3 mb-3">
+                                <i class="bi bi-check-circle fs-4 text-info"></i>
+                            </div>
+                            <h6>Approve</h6>
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <a href="/admin/salary_management?month={{ current_month }}" class="quick-action text-decoration-none"></a>
+                            <div class="rounded-circle bg-danger bg-opacity-10 d-inline-flex p-3 mb-3">
+                                <i class="bi bi-printer fs-4 text-danger"></i>
+                            </div>
+                            <h6>Reports</h6>
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <a href="/admin/approve_leave" class="quick-action text-decoration-none">
+                            <div class="rounded-circle bg-secondary bg-opacity-10 d-inline-flex p-3 mb-3">
+                                <i class="bi bi-calendar-x fs-4 text-secondary"></i>
+                            </div>
+                            <h6>Leave</h6>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Recent Activity -->
+            <div class="col-lg-8 mb-4">
+                <div class="admin-card fade-in">
+                    <h4 class="mb-4" style="color: var(--text-dark-slate)">
+                        <i class="bi bi-clock-history me-2 text-primary"></i>
+                        Today's Attendance Activity
+                    </h4>
+                    
+                    {% if recent_attendance %}
+                        {% for record in recent_attendance %}
+                        <div class="activity-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ record.name }}</h6>
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar me-1"></i>{{ record.date }}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-semibold">
+                                        {% if record.check_in %}
+                                            <span class="text-success">{{ record.check_in }}</span>
+                                        {% endif %}
+                                        {% if record.check_out %}
+                                            → <span class="text-warning">{{ record.check_out }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">
+                                        {% if record.check_out %}Completed{% else %}In Progress{% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="rounded-circle bg-light d-inline-flex p-4 mb-3">
+                            <i class="bi bi-calendar-x fs-1 text-muted"></i>
+                        </div>
+                        <h5 class="text-muted">No Activity Today</h5>
+                        <p class="text-muted">Attendance records will appear here as workers check in.</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4 text-center">
+                        <a href="/admin/attendance_reports" class="btn btn-outline-primary">
+                            <i class="bi bi-bar-chart me-2"></i>View Full Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Actions -->
+            <div class="col-lg-4 mb-4">
+                <div class="admin-card fade-in" style="animation-delay: 0.3s">
+                    <h4 class="mb-4" style="color: var(--text-dark-slate)">
+                        <i class="bi bi-bell me-2 text-warning"></i>
+                        Pending Actions
+                    </h4>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Substitute Approvals:</span>
+                            <span class="badge bg-warning">{{ pending_substitutes }}</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-warning" style="width: {% if pending_substitutes > 5 %}100{% else %}{{ pending_substitutes * 20 }}{% endif %}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Pending Salaries:</span>
+                            <span class="badge bg-danger">{{ pending_salaries }}</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-danger" style="width: {% if pending_salaries > 5 %}100{% else %}{{ pending_salaries * 20 }}{% endif %}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info border-0 mt-4" style="background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.2);">
+                        <div class="d-flex">
+                            <i class="bi bi-info-circle fs-5 me-3" style="color: var(--accent-sky-blue);"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1">Action Required</h6>
+                                <p class="mb-0 small">Review pending substitute requests and salary approvals.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="/admin/approve_substitutes" class="btn btn-warning w-100 mb-2">
+                            <i class="bi bi-check-circle me-2"></i>Approve Substitutes
+                        </a>
+                        <a href="/admin/salary_management" class="btn btn-danger w-100">
+                            <i class="bi bi-cash-coin me-2"></i>Manage Salaries
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-4 border-top bg-white mt-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="text-muted small">
+                        © 2025 Smart Labour System • Admin Dashboard
+                    </span>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="text-muted small">
+                        <i class="bi bi-shield-check me-1"></i>Admin ID: {{ admin.worker_id }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

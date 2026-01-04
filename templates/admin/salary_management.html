@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salary Management - Smart Labour Admin</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-blue: #3B82F6;
+            --primary-dark-blue: #2563EB;
+            --accent-sky-blue: #38BDF8;
+            --bg-light-gray: #F8FAFC;
+            --card-white: #FFFFFF;
+            --text-dark-slate: #1E293B;
+            --text-medium: #64748B;
+            --text-light: #94A3B8;
+            --border-light: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light-gray);
+            color: var(--text-dark-slate);
+            min-height: 100vh;
+        }
+        
+        .nav-custom {
+            background: var(--card-white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            padding: 1rem 0;
+        }
+        
+        .nav-link-custom {
+            color: var(--text-medium) !important;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link-custom:hover, .nav-link-custom.active {
+            color: var(--primary-blue) !important;
+            background: rgba(59, 130, 246, 0.08);
+        }
+        
+        /* Salary Cards */
+        .salary-card {
+            background: var(--card-white);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .status-draft { background: rgba(156, 163, 175, 0.1); color: var(--text-medium); }
+        .status-finalized { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .status-paid { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        
+        /* Month Selector */
+        .month-selector {
+            background: var(--card-white);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--text-dark-slate);
+            font-weight: 500;
+        }
+        
+        /* Salary Table */
+        .salary-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .salary-table th {
+            background: rgba(16, 185, 129, 0.05);
+            color: var(--text-dark-slate);
+            font-weight: 600;
+            padding: 1rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+        
+        .salary-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-medium);
+        }
+        
+        .salary-table tr:hover {
+            background: rgba(16, 185, 129, 0.02);
+        }
+        
+        /* Stats Cards */
+        .stats-card {
+            background: var(--card-white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg nav-custom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-bold fs-3 text-primary" href="/admin/dashboard">
+                <i class="bi bi-hammer me-2"></i>SmartLabour
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list fs-3 text-primary"></i>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/admin/dashboard">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/admin/all_workers">
+                            <i class="bi bi-people me-2"></i>All Workers
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/admin/attendance_reports">
+                            <i class="bi bi-calendar-check me-2"></i>Attendance
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom active" href="/admin/salary_management">
+                            <i class="bi bi-cash-coin me-2"></i>Salary
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link-custom dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-gear me-2"></i>Approvals
+                        </a>
+                        <ul class="dropdown-menu shadow-lg border-0">
+                            <li><a class="dropdown-item" href="/admin/approve_substitutes">
+                                <i class="bi bi-arrow-left-right me-2 text-primary"></i>Substitutes
+                            </a></li>
+                            <li><a class="dropdown-item" href="/admin/approve_leave">
+                                <i class="bi bi-calendar-x me-2 text-warning"></i>Leave
+                            </a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom text-danger" href="/logout">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+            <div>
+                <h1 class="fw-bold mb-2" style="color: var(--text-dark-slate)">Salary Management</h1>
+                <p class="text-muted mb-0">Manage and finalize monthly salaries for all workers</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/admin/dashboard" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Dashboard
+                </a>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSalaryModal">
+                    <i class="bi bi-plus-circle me-2"></i>Add Salary
+                </button>
+            </div>
+        </div>
+
+        <!-- Month Selector -->
+        <div class="salary-card mb-4 fade-in">
+            <form method="GET" action="/admin/salary_management" class="row align-items-center">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Select Month</label>
+                    <input type="month" class="month-selector form-control" name="month" value="{{ current_month }}"
+                           onchange="this.form.submit()">
+                </div>
+                <div class="col-md-8">
+                    <div class="row g-3">
+                        <div class="col-4">
+                            <div class="stats-card">
+                                {% set draft_count = salaries|selectattr('status', 'equalto', 'Draft')|list|length %}
+                                <div class="stat-value text-secondary">{{ draft_count }}</div>
+                                <div class="text-muted">Draft</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stats-card">
+                                {% set finalized_count = salaries|selectattr('status', 'equalto', 'Finalized')|list|length %}
+                                <div class="stat-value text-warning">{{ finalized_count }}</div>
+                                <div class="text-muted">Finalized</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stats-card">
+                                {% set paid_count = salaries|selectattr('status', 'equalto', 'Paid')|list|length %}
+                                <div class="stat-value text-success">{{ paid_count }}</div>
+                                <div class="text-muted">Paid</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Salary Records -->
+        <div class="salary-card mb-4 fade-in" style="animation-delay: 0.1s">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0" style="color: var(--text-dark-slate)">
+                    <i class="bi bi-cash-stack me-2 text-primary"></i>
+                    Salary Records - {{ current_month }}
+                </h4>
+                <div class="text-muted">
+                    {{ salaries|length }} records
+                </div>
+            </div>
+            
+            {% if salaries %}
+            <div class="table-responsive">
+                <table class="salary-table">
+                    <thead>
+                        <tr>
+                            <th>Worker</th>
+                            <th>Department</th>
+                            <th>Base Salary</th>
+                            <th>Extra Hours</th>
+                            <th>Bonus</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for salary in salaries %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ salary.name }}</div>
+                                <small class="text-muted">{{ salary.contact }}</small>
+                            </td>
+                            <td>{{ salary.department }}</td>
+                            <td>৳{{ "%.2f"|format(salary.base_salary or 0) }}</td>
+                            <td>{{ salary.extra_hours or 0 }} hrs</td>
+                            <td>৳{{ "%.2f"|format(salary.bonus_amount or 0) }}</td>
+                            <td>
+                                <div class="fw-bold text-success">
+                                    ৳{{ "%.2f"|format(salary.total_salary or 0) }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge status-{{ salary.status|lower }}">
+                                    {{ salary.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-gear"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        {% if salary.status == 'Draft' %}
+                                        <li><a class="dropdown-item" href="#" onclick="updateSalaryStatus({{ salary.salary_id }}, 'Finalized')">
+                                            <i class="bi bi-check-circle text-warning me-2"></i>Finalize
+                                        </a></li>
+                                        {% elif salary.status == 'Finalized' %}
+                                        <li><a class="dropdown-item" href="#" onclick="updateSalaryStatus({{ salary.salary_id }}, 'Paid')">
+                                            <i class="bi bi-cash-coin text-success me-2"></i>Mark as Paid
+                                        </a></li>
+                                        {% endif %}
+                                        <li><a class="dropdown-item" href="#">
+                                            <i class="bi bi-pencil text-primary me-2"></i>Edit
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#">
+                                            <i class="bi bi-printer text-info me-2"></i>Print Slip
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <!-- Summary -->
+                <div class="row mt-4">
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            {% set total_base = salaries|sum(attribute='base_salary') %}
+                            <div class="stat-value text-primary">৳{{ "%.2f"|format(total_base or 0) }}</div>
+                            <div class="text-muted">Total Base</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            {% set total_bonus = salaries|sum(attribute='bonus_amount') %}
+                            <div class="stat-value text-success">৳{{ "%.2f"|format(total_bonus or 0) }}</div>
+                            <div class="text-muted">Total Bonus</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            {% set total_salary = salaries|sum(attribute='total_salary') %}
+                            <div class="stat-value text-warning">৳{{ "%.2f"|format(total_salary or 0) }}</div>
+                            <div class="text-muted">Total Salary</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            {% set avg_salary = total_salary / salaries|length if salaries|length > 0 else 0 %}
+                            <div class="stat-value text-info">৳{{ "%.2f"|format(avg_salary) }}</div>
+                            <div class="text-muted">Average</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="rounded-circle bg-light d-inline-flex p-4 mb-3">
+                    <i class="bi bi-cash-stack fs-1 text-muted"></i>
+                </div>
+                <h5 class="text-muted">No Salary Records</h5>
+                <p class="text-muted">No salary records found for {{ current_month }}.</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSalaryModal">
+                    <i class="bi bi-plus-circle me-2"></i>Add Salary Records
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Workers Without Salary -->
+        {% if workers_without_salary %}
+        <div class="salary-card fade-in" style="animation-delay: 0.2s">
+            <h4 class="mb-4" style="color: var(--text-dark-slate)">
+                <i class="bi bi-exclamation-triangle me-2 text-warning"></i>
+                Workers Without Salary - {{ current_month }}
+            </h4>
+            
+            <div class="row g-3">
+                {% for worker in workers_without_salary %}
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center p-3 border rounded">
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-2 me-3">
+                            <i class="bi bi-person text-warning"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">{{ worker.name }}</h6>
+                            <small class="text-muted">{{ worker.department }} • {{ worker.role|title }}</small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#addSalaryModal"
+                                onclick="setWorkerForSalary({{ worker.worker_id }}, '{{ worker.name }}')">
+                            <i class="bi bi-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Add Salary Modal -->
+    <div class="modal fade" id="addSalaryModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Salary Record</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/admin/salary/create" method="POST">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Worker</label>
+                                    <select class="form-select" name="worker_id" required id="workerSelect">
+                                        <option value="">Select worker...</option>
+                                        {% for worker in workers_without_salary %}
+                                        <option value="{{ worker.worker_id }}">{{ worker.name }} ({{ worker.department }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Month</label>
+                                    <input type="month" class="form-control" name="month" value="{{ current_month }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Base Salary (৳)</label>
+                                    <input type="number" class="form-control" name="base_salary" value="25000" step="0.01" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Extra Hours</label>
+                                    <input type="number" class="form-control" name="extra_hours" value="0" min="0">
+                                </div>
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Bonus will be calculated automatically (৳50 per extra hour)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Salary Record</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-4 border-top bg-white mt-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="text-muted small">
+                        © 2025 Smart Labour System • Salary Management
+                    </span>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="text-muted small">
+                        <i class="bi bi-calendar-month me-1"></i>Month: {{ current_month }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Update salary status
+        function updateSalaryStatus(salaryId, newStatus) {
+            if (confirm(`Change salary status to "${newStatus}"?`)) {
+                fetch(`/admin/salary/${salaryId}/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `status=${newStatus}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+            }
+        }
+        
+        // Set worker for salary modal
+        function setWorkerForSalary(workerId, workerName) {
+            document.getElementById('workerSelect').value = workerId;
+        }
+    </script>
+</body>
+</html>

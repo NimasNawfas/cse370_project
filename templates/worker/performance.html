@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance - Smart Labour</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-blue: #3B82F6;
+            --primary-dark-blue: #2563EB;
+            --accent-sky-blue: #38BDF8;
+            --bg-light-gray: #F8FAFC;
+            --card-white: #FFFFFF;
+            --text-dark-slate: #1E293B;
+            --text-medium: #64748B;
+            --text-light: #94A3B8;
+            --border-light: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light-gray);
+            color: var(--text-dark-slate);
+            min-height: 100vh;
+        }
+        
+        .nav-custom {
+            background: var(--card-white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            padding: 1rem 0;
+        }
+        
+        .nav-link-custom {
+            color: var(--text-medium) !important;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link-custom:hover, .nav-link-custom.active {
+            color: var(--primary-blue) !important;
+            background: rgba(59, 130, 246, 0.08);
+        }
+        
+        /* Performance Cards */
+        .performance-card {
+            background: var(--card-white);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .performance-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Performance Score */
+        .performance-score {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .score-excellent { color: var(--success); }
+        .score-good { color: var(--primary-blue); }
+        .score-average { color: var(--warning); }
+        .score-poor { color: var(--danger); }
+        
+        /* Gauge Circle */
+        .gauge-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: conic-gradient(
+                var(--success) 0% 70%,
+                var(--warning) 70% 90%,
+                var(--danger) 90% 100%
+            );
+            mask: radial-gradient(transparent 55px, black 56px);
+            -webkit-mask: radial-gradient(transparent 55px, black 56px);
+        }
+        
+        .gauge-inner {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--card-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        /* Stats Cards */
+        .stats-card {
+            background: var(--card-white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Performance Table */
+        .performance-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .performance-table th {
+            background: rgba(59, 130, 246, 0.05);
+            color: var(--text-dark-slate);
+            font-weight: 600;
+            padding: 1rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+        
+        .performance-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-medium);
+        }
+        
+        .performance-table tr:hover {
+            background: rgba(59, 130, 246, 0.02);
+        }
+        
+        /* Rating Stars */
+        .rating-stars {
+            color: #FFD700;
+            font-size: 1.2rem;
+        }
+        
+        /* Progress Bars */
+        .progress-custom {
+            height: 10px;
+            border-radius: 5px;
+            background: var(--border-light);
+        }
+        
+        .progress-custom .progress-bar {
+            border-radius: 5px;
+        }
+        
+        /* Action Buttons */
+        .action-btn {
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark-blue) 100%);
+            color: white;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            background: var(--card-white);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg nav-custom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-bold fs-3 text-primary" href="/worker/dashboard">
+                <i class="bi bi-hammer me-2"></i>SmartLabour
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list fs-3 text-primary"></i>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/worker/dashboard">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/worker/profile">
+                            <i class="bi bi-person-circle me-2"></i>Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/worker/tasks">
+                            <i class="bi bi-list-check me-2"></i>Tasks
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link-custom" href="/worker/attendance">
+                            <i class="bi bi-calendar-check me-2"></i>Attendance
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link-custom dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical me-2"></i>More
+                        </a>
+                        <ul class="dropdown-menu shadow-lg border-0">
+                            <li><a class="dropdown-item" href="/worker/substitute">
+                                <i class="bi bi-arrow-left-right me-2 text-primary"></i>Substitute
+                            </a></li>
+                            <li><a class="dropdown-item" href="/worker/leave">
+                                <i class="bi bi-calendar-x me-2 text-warning"></i>Leave
+                            </a></li>
+                            <li><a class="dropdown-item" href="/worker/salary">
+                                <i class="bi bi-cash-coin me-2 text-success"></i>Salary
+                            </a></li>
+                            <li><a class="dropdown-item active" href="/worker/performance">
+                                <i class="bi bi-graph-up me-2 text-info"></i>Performance
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="/logout">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+            <div>
+                <h1 class="fw-bold mb-2" style="color: var(--text-dark-slate)">Performance Dashboard</h1>
+                <p class="text-muted mb-0">Track your performance metrics and improvement areas</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/worker/dashboard" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Dashboard
+                </a>
+                <button class="btn btn-primary" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i>Print Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Current Performance -->
+        <div class="performance-card mb-4 fade-in">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="gauge-circle mb-3">
+                            <div class="gauge-inner">
+                                {% if performances %}
+                                    {% set latest = performances[0] %}
+                                    {% set score = latest.attendance_percentage or 85 %}
+                                    <div class="performance-score {% if score >= 90 %}score-excellent{% elif score >= 75 %}score-good{% elif score >= 60 %}score-average{% else %}score-poor{% endif %}">
+                                        {{ score|int }}%
+                                    </div>
+                                {% else %}
+                                    <div class="performance-score score-average">0%</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <h5 class="mb-3" style="color: var(--text-dark-slate)">Overall Performance Score</h5>
+                        <div class="rating-stars">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-half"></i>
+                            <i class="bi bi-star"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-8">
+                    <h3 class="mb-4" style="color: var(--text-dark-slate)">Current Month Performance - {{ current_month }}</h3>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <div class="stat-value text-primary">{{ current_stats.days_worked or 0 }}</div>
+                                <div class="text-muted">Days Worked</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <div class="stat-value text-success">{{ current_stats.avg_hours or 0|round(2) }}</div>
+                                <div class="text-muted">Avg Hours/Day</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <div class="stat-value text-warning">{{ current_stats.total_hours or 0|round(2) }}</div>
+                                <div class="text-muted">Total Hours</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Attendance Rate</span>
+                            <span class="fw-semibold">
+                                {% if current_stats.total_days and current_stats.days_worked %}
+                                    {{ (current_stats.days_worked / current_stats.total_days * 100)|round|int }}%
+                                {% else %}0%{% endif %}
+                            </span>
+                        </div>
+                        <div class="progress-custom progress">
+                            <div class="progress-bar bg-success" 
+                                 style="width: {% if current_stats.total_days and current_stats.days_worked %}{{ (current_stats.days_worked / current_stats.total_days * 100) }}%{% else %}0%{% endif %}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Task Completion</span>
+                            <span class="fw-semibold">
+                                {% set total_tasks = tasks|length %}
+                                {% set completed_tasks = tasks|selectattr('status', 'equalto', 'Completed')|list|length %}
+                                {% if total_tasks > 0 %}
+                                    {{ (completed_tasks / total_tasks * 100)|round|int }}%
+                                {% else %}100%{% endif %}
+                            </span>
+                        </div>
+                        <div class="progress-custom progress">
+                            <div class="progress-bar bg-primary" 
+                                 style="width: {% if total_tasks > 0 %}{{ (completed_tasks / total_tasks * 100) }}%{% else %}100%{% endif %}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Trends -->
+        <div class="row mb-4 fade-in" style="animation-delay: 0.2s">
+            <div class="col-12">
+                <div class="chart-container">
+                    <h4 class="mb-3" style="color: var(--text-dark-slate)">Performance Trends</h4>
+                    <div style="height: 300px;">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance History -->
+        <div class="row fade-in" style="animation-delay: 0.3s">
+            <div class="col-12">
+                <div class="performance-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0" style="color: var(--text-dark-slate)">Performance History</h4>
+                        <div class="d-flex gap-2">
+                            <select class="form-select" style="width: auto;">
+                                <option>Last 6 Months</option>
+                                <option>Last 12 Months</option>
+                                <option>Year to Date</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    {% if performances %}
+                    <div class="table-responsive">
+                        <table class="performance-table">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Attendance %</th>
+                                    <th>Total Hours</th>
+                                    <th>Task Completion</th>
+                                    <th>Manager Feedback</th>
+                                    <th>Performance Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for perf in performances %}
+                                <tr>
+                                    <td>{{ perf.month }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress-custom progress flex-grow-1 me-2" style="height: 6px;">
+                                                <div class="progress-bar bg-success" 
+                                                     style="width: {{ perf.attendance_percentage or 0 }}%"></div>
+                                            </div>
+                                            <span>{{ perf.attendance_percentage or 0|int }}%</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ perf.total_hours or 0|round(2) }} hrs</td>
+                                    <td>
+                                        {% set task_score = 85 %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress-custom progress flex-grow-1 me-2" style="height: 6px;">
+                                                <div class="progress-bar bg-primary" 
+                                                     style="width: {{ task_score }}%"></div>
+                                            </div>
+                                            <span>{{ task_score }}%</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if perf.manager_feedback %}
+                                            <span class="badge bg-info">Feedback Given</span>
+                                        {% else %}
+                                            <span class="text-muted">No feedback</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% set overall_score = ((perf.attendance_percentage or 0) + task_score) / 2 %}
+                                        <div class="performance-score {% if overall_score >= 90 %}score-excellent{% elif overall_score >= 75 %}score-good{% elif overall_score >= 60 %}score-average{% else %}score-poor{% endif %}">
+                                            {{ overall_score|int }}%
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="download-btn action-btn" onclick="viewPerformanceDetails('{{ perf.month }}')">
+                                            <i class="bi bi-eye me-1"></i>View
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="rounded-circle bg-light d-inline-flex p-4 mb-3">
+                            <i class="bi bi-graph-up fs-1 text-muted"></i>
+                        </div>
+                        <h5 class="text-muted">No Performance Records</h5>
+                        <p class="text-muted">Your performance records will appear here at the end of each month.</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Summary -->
+                    <div class="row mt-4">
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                {% set avg_attendance = performances|sum(attribute='attendance_percentage') / performances|length if performances else 0 %}
+                                <div class="stat-value text-primary">{{ avg_attendance|round|int }}%</div>
+                                <div class="text-muted">Avg Attendance</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                {% set total_hours = performances|sum(attribute='total_hours') %}
+                                <div class="stat-value text-success">{{ total_hours|round(2) }}</div>
+                                <div class="text-muted">Total Hours</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <div class="stat-value text-warning">{{ performances|length }}</div>
+                                <div class="text-muted">Months Tracked</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                {% set best_month = performances|max(attribute='attendance_percentage') if performances else 0 %}
+                                <div class="stat-value text-info">{{ best_month.attendance_percentage|default(0)|int }}%</div>
+                                <div class="text-muted">Best Month</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-4 border-top bg-white mt-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="text-muted small">
+                        © 2025 Smart Labour System • Performance Management
+                    </span>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="text-muted small">
+                        <i class="bi bi-graph-up me-1"></i>Last updated: {{ current_month }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize Chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            // Sample data from backend
+            const months = [{% for perf in performances|reverse %}'{{ perf.month }}',{% endfor %}];
+            const attendance = [{% for perf in performances|reverse %}{{ perf.attendance_percentage or 0 }},{% endfor %}];
+            const hours = [{% for perf in performances|reverse %}{{ perf.total_hours or 0 }},{% endfor %}];
+            
+            const performanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: months.slice(-6).reverse(),
+                    datasets: [
+                        {
+                            label: 'Attendance %',
+                            data: attendance.slice(-6).reverse(),
+                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            borderColor: 'rgb(59, 130, 246)',
+                            borderWidth: 1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Total Hours',
+                            data: hours.slice(-6).reverse(),
+                            backgroundColor: 'rgba(16, 185, 129, 0.5)',
+                            borderColor: 'rgb(16, 185, 129)',
+                            borderWidth: 1,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            min: 0,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Attendance %'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Total Hours'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+            
+            // View performance details
+            window.viewPerformanceDetails = function(month) {
+                const modalHtml = `
+                    <div class="modal fade" id="performanceDetailModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Performance Details - ${month}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Metrics</h6>
+                                            <div class="mt-3">
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span class="text-muted">Attendance Rate:</span>
+                                                    <span class="fw-semibold">95%</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span class="text-muted">Task Completion:</span>
+                                                    <span class="fw-semibold">88%</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span class="text-muted">On-Time Delivery:</span>
+                                                    <span class="fw-semibold">92%</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span class="text-muted">Total Hours:</span>
+                                                    <span class="fw-semibold">176 hours</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Manager Feedback</h6>
+                                            <div class="mt-3">
+                                                <div class="alert alert-info">
+                                                    <i class="bi bi-chat-left-text me-2"></i>
+                                                    <strong>Feedback:</strong> Excellent work this month. Keep up the good performance and punctuality.
+                                                </div>
+                                                <p><strong>Rating:</strong> 4.5/5</p>
+                                                <p><strong>Submitted by:</strong> Manager</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                const modal = new bootstrap.Modal(document.getElementById('performanceDetailModal'));
+                modal.show();
+                
+                document.getElementById('performanceDetailModal').addEventListener('hidden.bs.modal', function() {
+                    this.remove();
+                });
+            };
+        });
+    </script>
+</body>
+</html>
